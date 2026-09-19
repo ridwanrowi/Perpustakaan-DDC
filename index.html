@@ -115,7 +115,7 @@
     </div>
   </main>
 
-  <!-- MODAL: DETAIL BUKU & PREVIEW UTUH + YOUTUBE -->
+  <!-- MODAL: DETAIL BUKU & PREVIEW UTUH + YOUTUBE LINK & VIDEO -->
   <div id="detailModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full my-8 shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
       <div class="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
@@ -179,11 +179,24 @@
           </div>
         </div>
 
-        <!-- Section Youtube Review -->
-        <div id="youtubeSection" class="hidden pt-4 border-t border-slate-200 space-y-2">
+        <!-- Section Link & Pemutar Video YouTube -->
+        <div id="youtubeSection" class="hidden pt-4 border-t border-slate-200 space-y-3">
           <h4 class="text-xs font-bold uppercase text-red-600 flex items-center gap-1.5">
             <span>📹</span> Ulasan / Review Video YouTube
           </h4>
+
+          <!-- Kotak Tampilan Link YouTube yang dimasukkan sebelumnya -->
+          <div class="bg-red-50 border border-red-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="overflow-hidden">
+              <span class="text-[10px] text-red-500 font-bold uppercase block">Tautan Video Terdaftar</span>
+              <a id="detYoutubeLink" href="#" target="_blank" class="text-xs font-mono font-semibold text-red-700 hover:text-red-900 underline truncate block"></a>
+            </div>
+            <a id="detYoutubeLinkBtn" href="#" target="_blank" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shrink-0 text-center shadow-xs">
+              🔗 Buka di YouTube
+            </a>
+          </div>
+
+          <!-- Pemutar Video Player Embed -->
           <div class="aspect-video w-full rounded-xl overflow-hidden border border-slate-300 shadow-sm bg-black">
             <iframe id="youtubeIframe" class="w-full h-full" src="" title="YouTube Video Review" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           </div>
@@ -476,12 +489,27 @@
 
       document.getElementById('detCoverImg').src = book.coverUrl || 'https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80';
 
+      // YouTube Link & Player Handler
       const ytSection = document.getElementById('youtubeSection');
+      const ytLink = document.getElementById('detYoutubeLink');
+      const ytBtn = document.getElementById('detYoutubeLinkBtn');
       const ytIframe = document.getElementById('youtubeIframe');
-      const embedUrl = getYoutubeEmbedUrl(book.youtubeUrl);
 
-      if (embedUrl) {
-        ytIframe.src = embedUrl;
+      if (book.youtubeUrl && book.youtubeUrl.trim() !== '') {
+        const rawUrl = book.youtubeUrl.trim();
+        ytLink.innerText = rawUrl;
+        ytLink.href = rawUrl;
+        ytBtn.href = rawUrl;
+
+        const embedUrl = getYoutubeEmbedUrl(rawUrl);
+        if (embedUrl) {
+          ytIframe.src = embedUrl;
+          ytIframe.parentElement.classList.remove('hidden');
+        } else {
+          ytIframe.src = '';
+          ytIframe.parentElement.classList.add('hidden');
+        }
+
         ytSection.classList.remove('hidden');
       } else {
         ytIframe.src = '';
