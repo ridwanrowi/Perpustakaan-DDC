@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Pendataan Perpustakaan DDC & QR Code</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- QRCode.js Library via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    @media print {
+      body { background: white !important; padding: 0 !important; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      .page-break { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+
+  <!-- NAVBAR -->
+  <header class="no-print bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-amber-400 font-black text-xl shadow-sm">
+          📚
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
+            Perpustakaan DDC
+          </h1>
+          <p class="text-[11px] text-slate-500 hidden sm:block">
+            Google Sheets & Apps Script Web App
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span id="syncStatusBadge" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Google Sheets Aktif
+        </span>
+        <button onclick="openBatchPrintModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg border border-slate-300">
+          🖨️ Cetak Massal
+        </button>
+        <button onclick="openAddBookModal()" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow-sm">
+          + Tambah Buku
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- SEARCH & FILTER TOOLBAR -->
+    <div class="no-print bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+      <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div class="relative w-full sm:flex-1">
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Cari judul, nama pengarang, ID buku, atau kode DDC..."
+            oninput="handleSearch()"
+            class="w-full pl-3 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900"
+          />
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <select id="mainClassFilter" onchange="handleSearch()" class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700">
+            <option value="ALL">Semua Kelas DDC (000 - 900)</option>
+            <option value="0">000 - Karya Umum, Komputer</option>
+            <option value="1">100 - Filsafat & Psikologi</option>
+            <option value="2">200 - Agama</option>
+            <option value="3">300 - Ilmu Sosial</option>
+            <option value="4">400 - Bahasa</option>
+            <option value="5">500 - Sains & Matematika</option>
+            <option value="6">600 - Teknologi & Terapan</option>
+            <option value="7">700 - Kesenian & Rekreasi</option>
+            <option value="8">800 - Kesusastraan</option>
+            <option value="9">900 - Sejarah & Geografi</option>
+          </select>
+          <button onclick="loadBooksFromSheet()" title="Segarkan Data" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold border border-slate-300">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+      <div class="text-xs text-slate-500 flex justify-between items-center pt-1">
+        <span>Menampilkan <strong id="bookCountText" class="text-slate-900">0</strong> buku</span>
+        <span class="text-[11px] text-slate-400">Tersinkron langsung dengan Google Sheets</span>
+      </div>
+    </div>
+
+    <!-- BOOK CATALOG GRID -->
+    <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      <!-- Diisi otomatis oleh JavaScript -->
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div id="emptyState" class="hidden bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-2">
+      <div class="text-4xl">📖</div>
+      <h3 class="text-base font-bold text-slate-800">Belum Ada Koleksi Buku</h3>
+      <p class="text-xs text-slate-500">Klik tombol '+ Tambah Buku' di atas untuk mencatat data buku pertama ke Google Sheets.</p>
+    </div>
+  </main>
+
+  <!-- MODAL: TAMBAH / EDIT BUKU -->
+  <div id="bookModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/70 rounded-t-2xl">
+        <h3 id="modalTitle" class="text-base font-bold text-slate-900">Registrasi Buku Baru (DDC)</h3>
+        <button onclick="closeBookModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
+      </div>
+
+      <form id="bookForm" onsubmit="handleFormSubmit(event)" class="overflow-y-auto p-6 space-y-4">
+        <input type="hidden" id="formMode" value="create">
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">ID Buku *</label>
+            <input type="text" id="inpId" required class="w-full px-3 py-2 text-xs font-mono border border-slate-300 rounded-xl bg-slate-50">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Tahun Terbit *</label>
+            <input type="number" id="inpYear" required min="1800" max="2100" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Pengarang *</label>
+            <input type="text" id="inpAuthor" required placeholder="Nama lengkap penulis" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Judul Buku *</label>
+          <input type="text" id="inpTitle" required placeholder="Judul buku beserta subjudul" class="w-full px-3.5 py-2 text-xs font-medium border border-slate-300 rounded-xl">
+        </div>
+
+        <!-- DDC SELECTOR -->
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <label class="block text-xs font-bold uppercase text-slate-900">Klasifikasi Dewey Decimal (DDC) *</label>
+          <select id="inpDdc" onchange="handleDdcSelectChange()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium">
+            <option value="004|Ilmu Komputer & Pemrosesan Data">[004] Ilmu Komputer & Pemrosesan Data (Karya Umum)</option>
+            <option value="005.1|Pemrograman Komputer & Algoritma" selected>[005.1] Pemrograman Komputer & Algoritma</option>
+            <option value="005.7|Manajemen Data & Basis Data">[005.7] Manajemen Data & Basis Data</option>
+            <option value="020|Ilmu Perpustakaan & Informasi">[020] Ilmu Perpustakaan & Informasi</option>
+            <option value="150|Psikologi Umum">[150] Psikologi Umum</option>
+            <option value="158|Psikologi Terapan & Pengembangan Diri">[158] Psikologi Terapan & Pengembangan Diri</option>
+            <option value="297.1|Al-Qur'an dan Ilmu Terkait">[297.1] Al-Qur'an dan Ilmu Terkait (Agama Islam)</option>
+            <option value="297.3|Fiqih & Ibadah Islam">[297.3] Fiqih & Ibadah Islam</option>
+            <option value="330|Ekonomi Umum & Finansial">[330] Ekonomi Umum & Finansial</option>
+            <option value="370|Pendidikan & Pembelajaran">[370] Pendidikan & Pembelajaran</option>
+            <option value="499.221|Bahasa Indonesia">[499.221] Bahasa Indonesia</option>
+            <option value="420|Bahasa Inggris">[420] Bahasa Inggris</option>
+            <option value="510|Matematika">[510] Matematika</option>
+            <option value="530|Fisika">[530] Fisika</option>
+            <option value="610|Kedokteran & Kesehatan">[610] Kedokteran & Kesehatan</option>
+            <option value="658|Manajemen Bisnis & Pemasaran">[658] Manajemen Bisnis & Pemasaran</option>
+            <option value="700|Kesenian & Rekreasi">[700] Kesenian & Rekreasi</option>
+            <option value="813|Fiksi & Novel Indonesia">[813] Fiksi & Novel Indonesia</option>
+            <option value="959.8|Sejarah Nasional Indonesia">[959.8] Sejarah Nasional Indonesia</option>
+            <option value="920|Biografi & Memoar">[920] Biografi & Memoar Tokoh</option>
+          </select>
+          <input type="hidden" id="inpDdcCode" value="005.1">
+          <input type="hidden" id="inpDdcCategory" value="Pemrograman Komputer & Algoritma">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Ringkasan Penulis (Bio)</label>
+            <textarea id="inpAuthorSummary" rows="3" placeholder="Profil singkat atau kepakaran pengarang..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Ringkasan / Sinopsis Buku</label>
+            <textarea id="inpSynopsis" rows="3" placeholder="Sinopsis atau bahasan topik utama buku..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl"></textarea>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Kualitas Cetakan</label>
+            <select id="inpPrintQuality" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs">
+              <option>Hardcover - Bookpaper 72gsm (Kondisi Sangat Baik)</option>
+              <option>Softcover - Bookpaper 55gsm (Kondisi Baik)</option>
+              <option>Softcover - Kertas HVS 70gsm (Kondisi Sangat Baik)</option>
+              <option>Hardcover - Art Paper Berwarna 120gsm</option>
+              <option>Softcover - Perlu Konservasi / Rusak Ringan</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">URL Gambar Sampul</label>
+            <input type="url" id="inpCoverUrl" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="closeBookModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Batal</button>
+          <button type="submit" id="btnSaveSubmit" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm">
+            Simpan ke Google Sheets
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CETAK QR SATUAN -->
+  <div id="singleQrModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="no-print flex items-center justify-between border-b border-slate-200 pb-3">
+        <h3 class="text-sm font-bold text-slate-900">Kartu Label & QR Pustaka</h3>
+        <button onclick="closeSingleQrModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
+      </div>
+
+      <!-- Printable Slip -->
+      <div id="printableSlip" class="border-2 border-dashed border-slate-400 p-5 rounded-xl text-center space-y-3 bg-white">
+        <div class="border-b border-slate-300 pb-1">
+          <p class="text-[9px] font-black tracking-widest uppercase text-slate-500">PERPUSTAKAAN DDC</p>
+          <h4 class="text-xs font-black uppercase text-slate-900">KARTU PUSTAKA & NOMOR PANGGIL</h4>
+        </div>
+        <div id="qrContainer" class="flex justify-center my-2"></div>
+        <div class="bg-slate-100 border border-slate-200 rounded py-1 px-2">
+          <span class="text-[8px] text-slate-500 uppercase font-semibold block">Nomor Panggil (Call Number)</span>
+          <span id="lblCallNumber" class="text-xs font-mono font-black text-slate-900"></span>
+        </div>
+        <div class="text-left text-xs space-y-0.5 pt-1">
+          <p class="text-[10px] text-slate-500 font-mono font-bold" id="lblId"></p>
+          <p class="font-bold text-slate-900 text-xs line-clamp-2" id="lblTitle"></p>
+          <p class="text-slate-600 text-[11px]" id="lblAuthor"></p>
+        </div>
+      </div>
+
+      <div class="no-print flex gap-2">
+        <button onclick="window.print()" class="flex-1 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-sm">
+          🖨️ Cetak Label
+        </button>
+        <button onclick="closeSingleQrModal()" class="px-4 py-2 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CETAK QR MASSAL (BATCH) -->
+  <div id="batchPrintModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200">
+      <div class="no-print px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-2xl">
+        <h3 class="text-sm font-bold text-slate-900">Cetak Lembar Stiker QR Massal</h3>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="px-4 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm">
+            🖨️ Cetak Halaman
+          </button>
+          <button onclick="closeBatchPrintModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
+        </div>
+      </div>
+
+      <div class="overflow-y-auto p-6 bg-slate-100">
+        <div id="batchGrid" class="grid grid-cols-2 gap-4 bg-white p-6 rounded-xl border border-slate-300 shadow-sm">
+          <!-- Diisi otomatis oleh JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    let allBooks = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadBooksFromSheet();
+    });
+
+    // Ambil data buku dari Google Sheets via google.script.run
+    function loadBooksFromSheet() {
+      const statusBadge = document.getElementById('syncStatusBadge');
+      statusBadge.innerText = 'Memuat dari Sheets...';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(response) {
+            statusBadge.innerText = '● Google Sheets Terhubung';
+            if (response && response.status === 'success') {
+              allBooks = response.data || [];
+              renderCatalog(allBooks);
+            }
+          })
+          .withFailureHandler(function(err) {
+            statusBadge.innerText = '⚠️ Gagal Sinkron';
+            console.error('Apps Script Error:', err);
+          })
+          .apiGetBooks();
+      } else {
+        // Fallback data demo jika diuji di luar Apps Script
+        statusBadge.innerText = 'Mode Pratinjau Lokal';
+        allBooks = [
+          {
+            id: 'LIB-DDC-2024-001',
+            title: 'Struktur Data dan Algoritma Modern dengan Python',
+            author: 'Dr. Ir. Rian Suhendra',
+            authorSummary: 'Pakar algoritma & Dosen senior ITB.',
+            synopsis: 'Membahas graf, pohon seimbang, dan optimasi Big-O.',
+            printQuality: 'Hardcover - Bookpaper 72gsm (Kondisi Sangat Baik)',
+            ddcCode: '005.1',
+            ddcCategory: 'Pemrograman Komputer & Algoritma',
+            publicationYear: 2024,
+            coverUrl: 'https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80',
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 'LIB-DDC-2023-002',
+            title: 'Psikologi Ketahanan Mental & Fokus di Era Distraksi',
+            author: 'Nadia Larasati, M.Psi.',
+            authorSummary: 'Praktisi psikologi klinis.',
+            synopsis: 'Panduan membangun fokus dan resiliensi emosi.',
+            printQuality: 'Softcover - Bookpaper 55gsm (Kondisi Baik)',
+            ddcCode: '158',
+            ddcCategory: 'Psikologi Terapan & Pengembangan Diri',
+            publicationYear: 2023,
+            coverUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
+            createdAt: new Date().toISOString()
+          }
+        ];
+        renderCatalog(allBooks);
+      }
+    }
+
+    // Nomor Panggil DDC Standar
+    function getCallNumber(b) {
+      const cleanAuthor = (b.author || 'X').replace(/^(Dr\.|Prof\.|Ir\.|Dra\.|Drs\.)\s*/gi, '').trim();
+      const authorInit = (cleanAuthor.slice(0, 3) || 'XXX').toUpperCase();
+      const titleInit = (b.title.trim().slice(0, 1) || 'x').toLowerCase();
+      return (b.ddcCode || '000') + ' ' + authorInit + ' ' + titleInit;
+    }
+
+    // Render Kartu Katalog Buku
+    function renderCatalog(books) {
+      const grid = document.getElementById('bookGrid');
+      const emptyState = document.getElementById('emptyState');
+      const countText = document.getElementById('bookCountText');
+
+      countText.innerText = books.length;
+      grid.innerHTML = '';
+
+      if (books.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      books.forEach(b => {
+        const callNum = getCallNumber(b);
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between';
+        card.innerHTML = `
+          <div>
+            <div class="h-40 bg-slate-100 relative overflow-hidden">
+              <img src="${b.coverUrl || 'https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80'}" class="w-full h-full object-cover">
+              <span class="absolute top-2 left-2 px-2 py-0.5 text-[10px] font-mono font-bold bg-slate-900/90 text-amber-400 rounded">
+                DDC ${b.ddcCode}
+              </span>
+            </div>
+            <div class="p-4 space-y-2">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${b.id}</span>
+                <span class="font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">${callNum}</span>
+              </div>
+              <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug line-clamp-2">${b.title}</h3>
+              <p class="text-xs text-slate-600 truncate font-medium">✍️ ${b.author} (${b.publicationYear})</p>
+              <p class="text-[11px] text-slate-500 line-clamp-2 pt-1">${b.synopsis || '-'}</p>
+            </div>
+          </div>
+          <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-1 text-xs">
+            <button onclick="showQrForBook('${b.id}')" class="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold hover:bg-amber-100">
+              🖨️ Cetak QR
+            </button>
+            <div class="flex items-center gap-1">
+              <button onclick="editBook('${b.id}')" class="p-1 text-slate-600 hover:text-slate-900 text-xs font-semibold">Edit</button>
+              <button onclick="deleteBook('${b.id}')" class="p-1 text-red-600 hover:text-red-800 text-xs font-semibold">Hapus</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Filter Pencarian & DDC
+    function handleSearch() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const cls = document.getElementById('mainClassFilter').value;
+
+      const filtered = allBooks.filter(b => {
+        const matchesClass = cls === 'ALL' || b.ddcCode.startsWith(cls);
+        const matchesQuery = !q ||
+          b.title.toLowerCase().includes(q) ||
+          b.author.toLowerCase().includes(q) ||
+          b.id.toLowerCase().includes(q) ||
+          b.ddcCode.toLowerCase().includes(q);
+        return matchesClass && matchesQuery;
+      });
+
+      renderCatalog(filtered);
+    }
+
+    function openAddBookModal() {
+      document.getElementById('formMode').value = 'create';
+      document.getElementById('modalTitle').innerText = 'Registrasi Buku Baru (DDC)';
+      document.getElementById('inpId').value = 'LIB-DDC-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('inpYear').value = new Date().getFullYear();
+      document.getElementById('inpTitle').value = '';
+      document.getElementById('inpAuthor').value = '';
+      document.getElementById('inpAuthorSummary').value = '';
+      document.getElementById('inpSynopsis').value = '';
+      document.getElementById('inpCoverUrl').value = 'https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80';
+      document.getElementById('bookModal').classList.remove('hidden');
+    }
+
+    function editBook(id) {
+      const book = allBooks.find(b => b.id === id);
+      if (!book) return;
+
+      document.getElementById('formMode').value = 'update';
+      document.getElementById('modalTitle').innerText = 'Edit Data Buku (' + book.id + ')';
+      document.getElementById('inpId').value = book.id;
+      document.getElementById('inpYear').value = book.publicationYear;
+      document.getElementById('inpTitle').value = book.title;
+      document.getElementById('inpAuthor').value = book.author;
+      document.getElementById('inpAuthorSummary').value = book.authorSummary || '';
+      document.getElementById('inpSynopsis').value = book.synopsis || '';
+      document.getElementById('inpCoverUrl').value = book.coverUrl || '';
+      document.getElementById('inpPrintQuality').value = book.printQuality;
+      document.getElementById('bookModal').classList.remove('hidden');
+    }
+
+    function closeBookModal() {
+      document.getElementById('bookModal').classList.add('hidden');
+    }
+
+    function handleDdcSelectChange() {
+      const val = document.getElementById('inpDdc').value;
+      const parts = val.split('|');
+      document.getElementById('inpDdcCode').value = parts[0];
+      document.getElementById('inpDdcCategory').value = parts[1];
+    }
+
+    // Simpan ke Google Sheets via apiAddBook / apiUpdateBook
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const mode = document.getElementById('formMode').value;
+      const bookObj = {
+        id: document.getElementById('inpId').value.trim(),
+        title: document.getElementById('inpTitle').value.trim(),
+        author: document.getElementById('inpAuthor').value.trim(),
+        authorSummary: document.getElementById('inpAuthorSummary').value.trim(),
+        synopsis: document.getElementById('inpSynopsis').value.trim(),
+        printQuality: document.getElementById('inpPrintQuality').value,
+        ddcCode: document.getElementById('inpDdcCode').value,
+        ddcCategory: document.getElementById('inpDdcCategory').value,
+        publicationYear: parseInt(document.getElementById('inpYear').value) || 2024,
+        coverUrl: document.getElementById('inpCoverUrl').value.trim(),
+        createdAt: new Date().toISOString()
+      };
+
+      const btn = document.getElementById('btnSaveSubmit');
+      btn.innerText = 'Menyimpan...';
+      btn.disabled = true;
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        const handler = mode === 'update' ? google.script.run.apiUpdateBook : google.script.run.apiAddBook;
+        handler
+          .withSuccessHandler(function(res) {
+            btn.innerText = 'Simpan ke Google Sheets';
+            btn.disabled = false;
+            closeBookModal();
+            loadBooksFromSheet();
+          })
+          .withFailureHandler(function(err) {
+            btn.innerText = 'Simpan ke Google Sheets';
+            btn.disabled = false;
+            alert('Gagal menyimpan: ' + err);
+          })(bookObj);
+      } else {
+        if (mode === 'update') {
+          allBooks = allBooks.map(b => b.id === bookObj.id ? bookObj : b);
+        } else {
+          allBooks.unshift(bookObj);
+        }
+        btn.innerText = 'Simpan ke Google Sheets';
+        btn.disabled = false;
+        closeBookModal();
+        renderCatalog(allBooks);
+      }
+    }
+
+    // Hapus Buku dari Google Sheets
+    function deleteBook(id) {
+      if (!confirm('Yakin ingin menghapus buku ' + id + '?')) return;
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function() { loadBooksFromSheet(); })
+          .apiDeleteBook(id);
+      } else {
+        allBooks = allBooks.filter(b => b.id !== id);
+        renderCatalog(allBooks);
+      }
+    }
+
+    // Generate & Tampilkan QR Satuan
+    function showQrForBook(id) {
+      const book = allBooks.find(b => b.id === id);
+      if (!book) return;
+
+      const callNum = getCallNumber(book);
+      document.getElementById('lblCallNumber').innerText = callNum;
+      document.getElementById('lblId').innerText = book.id;
+      document.getElementById('lblTitle').innerText = book.title;
+      document.getElementById('lblAuthor').innerText = book.author + ' (' + book.publicationYear + ')';
+
+      const qrContainer = document.getElementById('qrContainer');
+      qrContainer.innerHTML = '';
+      
+      const payload = JSON.stringify({
+        id: book.id,
+        callNumber: callNum,
+        title: book.title,
+        author: book.author,
+        ddc: book.ddcCode
+      });
+
+      new QRCode(qrContainer, {
+        text: payload,
+        width: 140,
+        height: 140,
+        colorDark: "#0f172a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      document.getElementById('singleQrModal').classList.remove('hidden');
+    }
+
+    function closeSingleQrModal() {
+      document.getElementById('singleQrModal').classList.add('hidden');
+    }
+
+    // Cetak Lembar Massal (Batch Print)
+    function openBatchPrintModal() {
+      const grid = document.getElementById('batchGrid');
+      grid.innerHTML = '';
+
+      allBooks.forEach(b => {
+        const callNum = getCallNumber(b);
+        const item = document.createElement('div');
+        item.className = 'border-2 border-dashed border-slate-300 p-3 rounded-lg flex items-center gap-3 bg-white page-break';
+        
+        const qrId = 'batch_qr_' + b.id.replace(/[^a-zA-Z0-9]/g, '_');
+        item.innerHTML = `
+          <div id="${qrId}" class="w-20 h-20 shrink-0 border border-slate-200 p-1 flex items-center justify-center"></div>
+          <div class="text-left space-y-1">
+            <span class="text-[8px] uppercase font-bold text-slate-400">PERPUSTAKAAN DDC</span>
+            <div class="bg-slate-100 px-1.5 py-0.5 rounded font-mono font-black text-xs text-slate-900">${callNum}</div>
+            <p class="font-mono text-[10px] font-bold text-slate-600">${b.id}</p>
+            <p class="font-bold text-slate-900 text-xs line-clamp-2">${b.title}</p>
+          </div>
+        `;
+        grid.appendChild(item);
+
+        setTimeout(() => {
+          const c = document.getElementById(qrId);
+          if (c) {
+            new QRCode(c, {
+              text: JSON.stringify({ id: b.id, callNumber: callNum, ddc: b.ddcCode }),
+              width: 72,
+              height: 72
+            });
+          }
+        }, 50);
+      });
+
+      document.getElementById('batchPrintModal').classList.remove('hidden');
+    }
+
+    function closeBatchPrintModal() {
+      document.getElementById('batchPrintModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
