@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Pendataan Perpustakaan DDC & QR Code</title>
-  <!-- Tailwind CSS via CDN -->
+  <title>Perpustakaan Islam & Bahasa Arab DDC</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- QRCode.js Library via CDN -->
+  <!-- QRCode.js Library CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-arabic { font-family: 'Amiri', serif; }
     @media print {
       body { background: white !important; padding: 0 !important; }
       .no-print { display: none !important; }
@@ -28,15 +29,15 @@
   <header class="no-print bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-amber-400 font-black text-xl shadow-sm">
-          📚
+        <div class="w-10 h-10 rounded-xl bg-emerald-900 flex items-center justify-center text-amber-400 font-bold text-xl shadow-sm">
+          📖
         </div>
         <div>
           <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
-            Perpustakaan DDC
+            Maktabah Islami & Arabiyyah
           </h1>
-          <p class="text-[11px] text-slate-500 hidden sm:block">
-            GitHub Pages & Google Sheets API Integration
+          <p class="text-[11px] text-emerald-700 font-semibold hidden sm:block">
+            Perpustakaan Khusus Agama Islam & Bahasa Arab
           </p>
         </div>
       </div>
@@ -47,10 +48,10 @@
           Google Sheets Aktif
         </span>
         <button onclick="openBatchPrintModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg border border-slate-300">
-          🖨️ Cetak Massal
+          🖨️ Cetak Massal QR
         </button>
-        <button onclick="openAddBookModal()" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow-sm">
-          + Tambah Buku
+        <button onclick="openAddBookModal()" class="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-lg shadow-sm">
+          + Tambah Kitab / Buku
         </button>
       </div>
     </div>
@@ -66,24 +67,29 @@
           <input
             id="searchInput"
             type="text"
-            placeholder="Cari judul, nama pengarang, ID buku, atau kode DDC..."
+            placeholder="Cari judul kitab, pengarang (مؤلف), ID, atau kode DDC..."
             oninput="handleSearch()"
-            class="w-full pl-3 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900"
+            class="w-full pl-3 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-800"
           />
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <select id="mainClassFilter" onchange="handleSearch()" class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700">
-            <option value="ALL">Semua Kelas DDC (000 - 900)</option>
-            <option value="0">000 - Karya Umum, Komputer</option>
-            <option value="1">100 - Filsafat & Psikologi</option>
-            <option value="2">200 - Agama</option>
-            <option value="3">300 - Ilmu Sosial</option>
-            <option value="4">400 - Bahasa</option>
-            <option value="5">500 - Sains & Matematika</option>
-            <option value="6">600 - Teknologi & Terapan</option>
-            <option value="7">700 - Kesenian & Rekreasi</option>
-            <option value="8">800 - Kesusastraan</option>
-            <option value="9">900 - Sejarah & Geografi</option>
+            <option value="ALL">Semua Bidang (Agama & Bahasa Arab)</option>
+            <optgroup label="Bidang Agama Islam (297)">
+              <option value="297.1">297.1 - Al-Qur'an & Ulumul Qur'an</option>
+              <option value="297.2">297.2 - Hadits & Ulumul Hadits</option>
+              <option value="297.3">297.3 - Aqidah & Tauhid</option>
+              <option value="297.4">297.4 - Fiqih & Ushul Fiqih</option>
+              <option value="297.5">297.5 - Akhlaq & Tasawuf</option>
+              <option value="297.6">297.6 - Tarikh Islam & Sirah Nabawiyah</option>
+            </optgroup>
+            <optgroup label="Bidang Bahasa Arab (492.7)">
+              <option value="492.71">492.71 - Nahwu (Grammar Arab)</option>
+              <option value="492.72">492.72 - Sharaf (Morfologi Arab)</option>
+              <option value="492.73">492.73 - Balaghah (Bayan, Ma'ani, Badi')</option>
+              <option value="492.74">492.74 - Mu'jam / Kamus Bahasa Arab</option>
+              <option value="492.75">492.75 - Adab & Sastra Arab (Maharah)</option>
+            </optgroup>
           </select>
           <button onclick="loadBooksFromSheet()" title="Segarkan Data" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold border border-slate-300">
             🔄 Refresh
@@ -91,29 +97,115 @@
         </div>
       </div>
       <div class="text-xs text-slate-500 flex justify-between items-center pt-1">
-        <span>Menampilkan <strong id="bookCountText" class="text-slate-900">0</strong> buku</span>
-        <span class="text-[11px] text-slate-400">Tersinkron langsung dengan Google Sheets</span>
+        <span>Menampilkan <strong id="bookCountText" class="text-emerald-800">0</strong> kitab/buku</span>
+        <span class="text-[11px] text-slate-400">Tersinkron otomatis dengan Google Sheets</span>
       </div>
     </div>
 
     <!-- BOOK CATALOG GRID -->
     <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-      <!-- Diisi otomatis oleh JavaScript -->
+      <!-- Diisi otomatis oleh JS -->
     </div>
 
     <!-- EMPTY STATE -->
     <div id="emptyState" class="hidden bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-2">
-      <div class="text-4xl">📖</div>
-      <h3 class="text-base font-bold text-slate-800">Belum Ada Koleksi Buku</h3>
-      <p class="text-xs text-slate-500">Klik tombol '+ Tambah Buku' di atas untuk mencatat data buku pertama ke Google Sheets.</p>
+      <div class="text-4xl">📚</div>
+      <h3 class="text-base font-bold text-slate-800">Belum Ada Koleksi Kitab</h3>
+      <p class="text-xs text-slate-500">Klik '+ Tambah Kitab / Buku' untuk menambahkan koleksi pertama.</p>
     </div>
   </main>
+
+  <!-- MODAL: DETAIL BUKU & PREVIEW UTUH + YOUTUBE -->
+  <div id="detailModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-3xl w-full my-8 shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
+        <div>
+          <span id="detDdcBadge" class="text-[10px] uppercase font-mono font-bold bg-amber-400 text-slate-900 px-2 py-0.5 rounded"></span>
+          <h3 id="detTitle" class="text-base font-bold mt-1 leading-snug"></h3>
+        </div>
+        <button onclick="closeDetailModal()" class="text-emerald-200 hover:text-white text-2xl font-bold">×</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6">
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- Foto Buku Utuh -->
+          <div class="w-full md:w-52 shrink-0 space-y-2">
+            <div class="bg-slate-100 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+              <img id="detCoverImg" src="" alt="Sampul Utuh" class="w-full h-auto object-contain max-h-72 mx-auto">
+            </div>
+            <p class="text-[10px] text-center text-slate-400">Tampilan Utuh Sampul Buku</p>
+          </div>
+
+          <!-- Informasi Detail -->
+          <div class="flex-1 space-y-3">
+            <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <div>
+                <span class="text-slate-400 block text-[10px] font-bold uppercase">ID Sistem</span>
+                <span id="detId" class="font-mono font-bold text-slate-800"></span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] font-bold uppercase">Nomor Panggil (Call Num)</span>
+                <span id="detCallNum" class="font-mono font-bold text-emerald-800"></span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] font-bold uppercase">Pengarang / المؤلف</span>
+                <span id="detAuthor" class="font-bold text-slate-900"></span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] font-bold uppercase">Tahun Terbit</span>
+                <span id="detYear" class="font-medium text-slate-700"></span>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-bold uppercase text-slate-700 mb-1">Kategori DDC</h4>
+              <p id="detDdcCategory" class="text-xs text-slate-800 font-semibold"></p>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-bold uppercase text-slate-700 mb-1">Profil Pengarang</h4>
+              <p id="detAuthorSummary" class="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200 leading-relaxed"></p>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-bold uppercase text-slate-700 mb-1">Sinopsis / Ringkasan Kitab</h4>
+              <p id="detSynopsis" class="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200 leading-relaxed"></p>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-bold uppercase text-slate-700 mb-1">Spesifikasi Fisik</h4>
+              <p id="detPrintQuality" class="text-xs text-slate-700 font-medium"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Youtube Review -->
+        <div id="youtubeSection" class="hidden pt-4 border-t border-slate-200 space-y-2">
+          <h4 class="text-xs font-bold uppercase text-red-600 flex items-center gap-1.5">
+            <span>📹</span> Ulasan / Review Video YouTube
+          </h4>
+          <div class="aspect-video w-full rounded-xl overflow-hidden border border-slate-300 shadow-sm bg-black">
+            <iframe id="youtubeIframe" class="w-full h-full" src="" title="YouTube Video Review" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-3 bg-slate-100 border-t border-slate-200 flex justify-between items-center">
+        <button id="detBtnPrintQr" onclick="" class="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-900 text-xs font-bold rounded-xl shadow-xs">
+          🖨️ Cetak QR Label
+        </button>
+        <button onclick="closeDetailModal()" class="px-4 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-xl">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL: TAMBAH / EDIT BUKU -->
   <div id="bookModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200">
-      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/70 rounded-t-2xl">
-        <h3 id="modalTitle" class="text-base font-bold text-slate-900">Registrasi Buku Baru (DDC)</h3>
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-emerald-50 rounded-t-2xl">
+        <h3 id="modalTitle" class="text-base font-bold text-emerald-900">Registrasi Buku / Kitab Baru</h3>
         <button onclick="closeBookModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
       </div>
 
@@ -122,84 +214,83 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">ID Buku *</label>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">ID Kitab *</label>
             <input type="text" id="inpId" required class="w-full px-3 py-2 text-xs font-mono border border-slate-300 rounded-xl bg-slate-50">
           </div>
           <div>
             <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Tahun Terbit *</label>
-            <input type="number" id="inpYear" required min="1800" max="2100" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl">
+            <input type="number" id="inpYear" required min="1000" max="2100" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl">
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Pengarang *</label>
-            <input type="text" id="inpAuthor" required placeholder="Nama lengkap penulis" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl">
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Pengarang / المؤلف *</label>
+            <input type="text" id="inpAuthor" required placeholder="Contoh: الإمام النووي / Dr. Sa'id" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-medium">
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Judul Buku *</label>
-          <input type="text" id="inpTitle" required placeholder="Judul buku beserta subjudul" class="w-full px-3.5 py-2 text-xs font-medium border border-slate-300 rounded-xl">
+          <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Judul Kitab / Buku *</label>
+          <input type="text" id="inpTitle" required placeholder="Judul lengkap kitab beserta subjudul" class="w-full px-3.5 py-2 text-xs font-bold border border-slate-300 rounded-xl">
         </div>
 
-        <!-- DDC SELECTOR -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-          <label class="block text-xs font-bold uppercase text-slate-900">Klasifikasi Dewey Decimal (DDC) *</label>
+        <!-- DDC SELECTOR SPESIFIK AGAMA & ARAB -->
+        <div class="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2">
+          <label class="block text-xs font-bold uppercase text-emerald-900">Klasifikasi DDC Agama & Bahasa Arab *</label>
           <select id="inpDdc" onchange="handleDdcSelectChange()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium">
-            <option value="004|Ilmu Komputer & Pemrosesan Data">[004] Ilmu Komputer & Pemrosesan Data (Karya Umum)</option>
-            <option value="005.1|Pemrograman Komputer & Algoritma" selected>[005.1] Pemrograman Komputer & Algoritma</option>
-            <option value="005.7|Manajemen Data & Basis Data">[005.7] Manajemen Data & Basis Data</option>
-            <option value="020|Ilmu Perpustakaan & Informasi">[020] Ilmu Perpustakaan & Informasi</option>
-            <option value="150|Psikologi Umum">[150] Psikologi Umum</option>
-            <option value="158|Psikologi Terapan & Pengembangan Diri">[158] Psikologi Terapan & Pengembangan Diri</option>
-            <option value="297.1|Al-Qur'an dan Ilmu Terkait">[297.1] Al-Qur'an dan Ilmu Terkait (Agama Islam)</option>
-            <option value="297.3|Fiqih & Ibadah Islam">[297.3] Fiqih & Ibadah Islam</option>
-            <option value="330|Ekonomi Umum & Finansial">[330] Ekonomi Umum & Finansial</option>
-            <option value="370|Pendidikan & Pembelajaran">[370] Pendidikan & Pembelajaran</option>
-            <option value="499.221|Bahasa Indonesia">[499.221] Bahasa Indonesia</option>
-            <option value="420|Bahasa Inggris">[420] Bahasa Inggris</option>
-            <option value="510|Matematika">[510] Matematika</option>
-            <option value="530|Fisika">[530] Fisika</option>
-            <option value="610|Kedokteran & Kesehatan">[610] Kedokteran & Kesehatan</option>
-            <option value="658|Manajemen Bisnis & Pemasaran">[658] Manajemen Bisnis & Pemasaran</option>
-            <option value="700|Kesenian & Rekreasi">[700] Kesenian & Rekreasi</option>
-            <option value="813|Fiksi & Novel Indonesia">[813] Fiksi & Novel Indonesia</option>
-            <option value="959.8|Sejarah Nasional Indonesia">[959.8] Sejarah Nasional Indonesia</option>
-            <option value="920|Biografi & Memoar">[920] Biografi & Memoar Tokoh</option>
+            <optgroup label="Bidang Agama Islam (297)">
+              <option value="297.1|Al-Qur'an dan Ulumul Qur'an" selected>[297.1] Al-Qur'an dan Ulumul Qur'an</option>
+              <option value="297.2|Hadits dan Ulumul Hadits">[297.2] Hadits dan Ulumul Hadits</option>
+              <option value="297.3|Aqidah & Tauhid (Ilmu Kalam)">[297.3] Aqidah & Tauhid (Ilmu Kalam)</option>
+              <option value="297.4|Fiqih & Ushul Fiqih">[297.4] Fiqih & Ushul Fiqih</option>
+              <option value="297.5|Akhlaq, Adab & Tasawuf">[297.5] Akhlaq, Adab & Tasawuf</option>
+              <option value="297.6|Tarikh Islam & Sirah Nabawiyah">[297.6] Tarikh Islam & Sirah Nabawiyah</option>
+            </optgroup>
+            <optgroup label="Bidang Bahasa Arab (492.7)">
+              <option value="492.71|Ilmu Nahwu (Tata Bahasa)">[492.71] Ilmu Nahwu (Tata Bahasa)</option>
+              <option value="492.72|Ilmu Sharaf (Morfologi Kata)">[492.72] Ilmu Sharaf (Morfologi Kata)</option>
+              <option value="492.73|Ilmu Balaghah (Bayan, Ma'ani, Badi')">[492.73] Ilmu Balaghah (Bayan, Ma'ani, Badi')</option>
+              <option value="492.74|Mu'jam & Kamus Bahasa Arab">[492.74] Mu'jam & Kamus Bahasa Arab</option>
+              <option value="492.75|Adab, Maharah & Sastra Arab">[492.75] Adab, Maharah & Sastra Arab</option>
+            </optgroup>
           </select>
-          <input type="hidden" id="inpDdcCode" value="005.1">
-          <input type="hidden" id="inpDdcCategory" value="Pemrograman Komputer & Algoritma">
+          <input type="hidden" id="inpDdcCode" value="297.1">
+          <input type="hidden" id="inpDdcCategory" value="Al-Qur'an dan Ulumul Qur'an">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Ringkasan Penulis (Bio)</label>
-            <textarea id="inpAuthorSummary" rows="3" placeholder="Profil singkat atau kepakaran pengarang..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl"></textarea>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Profil Pengarang</label>
+            <textarea id="inpAuthorSummary" rows="2" placeholder="Satu dua kalimat biografi singkat pengarang..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl"></textarea>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Ringkasan / Sinopsis Buku</label>
-            <textarea id="inpSynopsis" rows="3" placeholder="Sinopsis atau bahasan topik utama buku..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl"></textarea>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Ringkasan / Sinopsis Kitab</label>
+            <textarea id="inpSynopsis" rows="2" placeholder="Ringkasan topik bahasan kitab..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl"></textarea>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Kualitas Cetakan</label>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Kertas & Jilid</label>
             <select id="inpPrintQuality" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs">
-              <option>Hardcover - Bookpaper 72gsm (Kondisi Sangat Baik)</option>
-              <option>Softcover - Bookpaper 55gsm (Kondisi Baik)</option>
-              <option>Softcover - Kertas HVS 70gsm (Kondisi Sangat Baik)</option>
-              <option>Hardcover - Art Paper Berwarna 120gsm</option>
-              <option>Softcover - Perlu Konservasi / Rusak Ringan</option>
+              <option>Hardcover - Kertas HVS Putih</option>
+              <option>Hardcover - Kertas Kuning / Shamua (Bookpaper)</option>
+              <option>Softcover - Kertas HVS</option>
+              <option>Softcover - Bookpaper</option>
+              <option>Mujallad / Jilid Tebal (Luks)</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">URL Gambar Sampul</label>
-            <input type="url" id="inpCoverUrl" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl">
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">URL Foto Sampul Utuh</label>
+            <input type="url" id="inpCoverUrl" placeholder="https://..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">URL Review YouTube</label>
+            <input type="url" id="inpYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl">
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
           <button type="button" onclick="closeBookModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Batal</button>
-          <button type="submit" id="btnSaveSubmit" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm">
+          <button type="submit" id="btnSaveSubmit" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl shadow-sm">
             Simpan ke Google Sheets
           </button>
         </div>
@@ -215,15 +306,14 @@
         <button onclick="closeSingleQrModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
       </div>
 
-      <!-- Printable Slip -->
-      <div id="printableSlip" class="border-2 border-dashed border-slate-400 p-5 rounded-xl text-center space-y-3 bg-white">
+      <div id="printableSlip" class="border-2 border-dashed border-emerald-800 p-5 rounded-xl text-center space-y-3 bg-white">
         <div class="border-b border-slate-300 pb-1">
-          <p class="text-[9px] font-black tracking-widest uppercase text-slate-500">PERPUSTAKAAN DDC</p>
+          <p class="text-[9px] font-black tracking-widest uppercase text-emerald-900">MAKTABAH ISLAMI & ARABIYYAH</p>
           <h4 class="text-xs font-black uppercase text-slate-900">KARTU PUSTAKA & NOMOR PANGGIL</h4>
         </div>
         <div id="qrContainer" class="flex justify-center my-2"></div>
-        <div class="bg-slate-100 border border-slate-200 rounded py-1 px-2">
-          <span class="text-[8px] text-slate-500 uppercase font-semibold block">Nomor Panggil (Call Number)</span>
+        <div class="bg-emerald-50 border border-emerald-200 rounded py-1 px-2">
+          <span class="text-[8px] text-emerald-800 uppercase font-semibold block">Nomor Panggil (Call Number)</span>
           <span id="lblCallNumber" class="text-xs font-mono font-black text-slate-900"></span>
         </div>
         <div class="text-left text-xs space-y-0.5 pt-1">
@@ -250,7 +340,7 @@
       <div class="no-print px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-2xl">
         <h3 class="text-sm font-bold text-slate-900">Cetak Lembar Stiker QR Massal</h3>
         <div class="flex items-center gap-2">
-          <button onclick="window.print()" class="px-4 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm">
+          <button onclick="window.print()" class="px-4 py-1.5 bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-sm">
             🖨️ Cetak Halaman
           </button>
           <button onclick="closeBatchPrintModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
@@ -267,7 +357,6 @@
 
   <!-- SCRIPT LOGIC -->
   <script>
-    // PASTE URL WEB APP APPS SCRIPT ANDA DI SINI
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwixLRUcMOJ8ATf6Hzv1oYvW1j7P6ESecanNuDPE36zfityDLpVyHrjH4xooeMQG9GD/exec";
 
     let allBooks = [];
@@ -276,16 +365,9 @@
       loadBooksFromSheet();
     });
 
-    // Ambil data buku dari Google Sheets via REST API
     function loadBooksFromSheet() {
       const statusBadge = document.getElementById('syncStatusBadge');
       statusBadge.innerText = 'Memuat dari Sheets...';
-
-      if (APPS_SCRIPT_URL.includes("AKfycbx...")) {
-        statusBadge.innerText = '⚠️ Masukkan URL Apps Script!';
-        console.warn('URL Apps Script belum diganti di variabel APPS_SCRIPT_URL.');
-        return;
-      }
 
       fetch(`${APPS_SCRIPT_URL}?action=getBooks`)
         .then(res => res.json())
@@ -300,19 +382,17 @@
         })
         .catch(err => {
           statusBadge.innerText = '⚠️ Gagal Sinkron';
-          console.error('Fetch Error:', err);
+          console.error(err);
         });
     }
 
-    // Nomor Panggil DDC Standar
     function getCallNumber(b) {
-      const cleanAuthor = (b.author || 'X').replace(/^(Dr\.|Prof\.|Ir\.|Dra\.|Drs\.)\s*/gi, '').trim();
+      const cleanAuthor = (b.author || 'X').replace(/^(Sheikh|Syaikh|Dr\.|Prof\.|Imam|الشيخ|الإمام)\s*/gi, '').trim();
       const authorInit = (cleanAuthor.slice(0, 3) || 'XXX').toUpperCase();
       const titleInit = (b.title.trim().slice(0, 1) || 'x').toLowerCase();
-      return (b.ddcCode || '000') + ' ' + authorInit + ' ' + titleInit;
+      return (b.ddcCode || '297') + ' ' + authorInit + ' ' + titleInit;
     }
 
-    // Render Kartu Katalog Buku
     function renderCatalog(books) {
       const grid = document.getElementById('bookGrid');
       const emptyState = document.getElementById('emptyState');
@@ -333,29 +413,31 @@
         card.className = 'bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between';
         card.innerHTML = `
           <div>
-            <div class="h-40 bg-slate-100 relative overflow-hidden">
-              <img src="${b.coverUrl || 'https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80'}" class="w-full h-full object-cover">
-              <span class="absolute top-2 left-2 px-2 py-0.5 text-[10px] font-mono font-bold bg-slate-900/90 text-amber-400 rounded">
+            <div class="h-44 bg-slate-100 relative overflow-hidden group cursor-pointer" onclick="openDetailModal('${b.id}')">
+              <img src="${b.coverUrl || 'https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+              <span class="absolute top-2 left-2 px-2 py-0.5 text-[10px] font-mono font-bold bg-emerald-900/90 text-amber-300 rounded">
                 DDC ${b.ddcCode}
               </span>
+              ${b.youtubeUrl ? '<span class="absolute bottom-2 right-2 px-1.5 py-0.5 bg-red-600 text-white text-[10px] rounded font-bold">📹 Video</span>' : ''}
             </div>
             <div class="p-4 space-y-2">
               <div class="flex items-center justify-between text-[11px]">
                 <span class="font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${b.id}</span>
-                <span class="font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">${callNum}</span>
+                <span class="font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded">${callNum}</span>
               </div>
-              <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug line-clamp-2">${b.title}</h3>
+              <h3 onclick="openDetailModal('${b.id}')" class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug line-clamp-2 cursor-pointer hover:text-emerald-800">${b.title}</h3>
               <p class="text-xs text-slate-600 truncate font-medium">✍️ ${b.author} (${b.publicationYear})</p>
               <p class="text-[11px] text-slate-500 line-clamp-2 pt-1">${b.synopsis || '-'}</p>
             </div>
           </div>
           <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-1 text-xs">
-            <button onclick="showQrForBook('${b.id}')" class="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold hover:bg-amber-100">
-              🖨️ Cetak QR
+            <button onclick="openDetailModal('${b.id}')" class="px-2.5 py-1 bg-emerald-800 text-white rounded font-bold hover:bg-emerald-900">
+              👁️ Detail & Foto
             </button>
             <div class="flex items-center gap-1">
-              <button onclick="editBook('${b.id}')" class="p-1 text-slate-600 hover:text-slate-900 text-xs font-semibold">Edit</button>
-              <button onclick="deleteBook('${b.id}')" class="p-1 text-red-600 hover:text-red-800 text-xs font-semibold">Hapus</button>
+              <button onclick="showQrForBook('${b.id}')" class="p-1 text-amber-700 hover:text-amber-900 font-bold" title="Cetak Label QR">🖨️</button>
+              <button onclick="editBook('${b.id}')" class="p-1 text-slate-600 hover:text-slate-900 font-semibold">Edit</button>
+              <button onclick="deleteBook('${b.id}')" class="p-1 text-red-600 hover:text-red-800 font-semibold">Hapus</button>
             </div>
           </div>
         `;
@@ -363,7 +445,62 @@
       });
     }
 
-    // Filter Pencarian & DDC
+    function getYoutubeEmbedUrl(url) {
+      if (!url) return null;
+      let videoId = '';
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      if (match && match[2].length === 11) {
+        videoId = match[2];
+        return 'https://www.youtube.com/embed/' + videoId;
+      }
+      return null;
+    }
+
+    function openDetailModal(id) {
+      const book = allBooks.find(b => b.id === id);
+      if (!book) return;
+
+      const callNum = getCallNumber(book);
+
+      document.getElementById('detDdcBadge').innerText = 'DDC ' + book.ddcCode;
+      document.getElementById('detTitle').innerText = book.title;
+      document.getElementById('detId').innerText = book.id;
+      document.getElementById('detCallNum').innerText = callNum;
+      document.getElementById('detAuthor').innerText = book.author;
+      document.getElementById('detYear').innerText = book.publicationYear;
+      document.getElementById('detDdcCategory').innerText = book.ddcCategory;
+      document.getElementById('detAuthorSummary').innerText = book.authorSummary || 'Belum ada data profil pengarang.';
+      document.getElementById('detSynopsis').innerText = book.synopsis || 'Belum ada ringkasan.';
+      document.getElementById('detPrintQuality').innerText = book.printQuality || '-';
+
+      document.getElementById('detCoverImg').src = book.coverUrl || 'https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80';
+
+      const ytSection = document.getElementById('youtubeSection');
+      const ytIframe = document.getElementById('youtubeIframe');
+      const embedUrl = getYoutubeEmbedUrl(book.youtubeUrl);
+
+      if (embedUrl) {
+        ytIframe.src = embedUrl;
+        ytSection.classList.remove('hidden');
+      } else {
+        ytIframe.src = '';
+        ytSection.classList.add('hidden');
+      }
+
+      document.getElementById('detBtnPrintQr').onclick = function() {
+        closeDetailModal();
+        showQrForBook(book.id);
+      };
+
+      document.getElementById('detailModal').classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('youtubeIframe').src = '';
+      document.getElementById('detailModal').classList.add('hidden');
+    }
+
     function handleSearch() {
       const q = document.getElementById('searchInput').value.toLowerCase();
       const cls = document.getElementById('mainClassFilter').value;
@@ -383,14 +520,15 @@
 
     function openAddBookModal() {
       document.getElementById('formMode').value = 'create';
-      document.getElementById('modalTitle').innerText = 'Registrasi Buku Baru (DDC)';
-      document.getElementById('inpId').value = 'LIB-DDC-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('modalTitle').innerText = 'Registrasi Buku / Kitab Baru';
+      document.getElementById('inpId').value = 'KTB-AR-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
       document.getElementById('inpYear').value = new Date().getFullYear();
       document.getElementById('inpTitle').value = '';
       document.getElementById('inpAuthor').value = '';
       document.getElementById('inpAuthorSummary').value = '';
       document.getElementById('inpSynopsis').value = '';
-      document.getElementById('inpCoverUrl').value = 'https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80';
+      document.getElementById('inpCoverUrl').value = '';
+      document.getElementById('inpYoutubeUrl').value = '';
       document.getElementById('bookModal').classList.remove('hidden');
     }
 
@@ -399,7 +537,7 @@
       if (!book) return;
 
       document.getElementById('formMode').value = 'update';
-      document.getElementById('modalTitle').innerText = 'Edit Data Buku (' + book.id + ')';
+      document.getElementById('modalTitle').innerText = 'Edit Data Kitab (' + book.id + ')';
       document.getElementById('inpId').value = book.id;
       document.getElementById('inpYear').value = book.publicationYear;
       document.getElementById('inpTitle').value = book.title;
@@ -407,6 +545,7 @@
       document.getElementById('inpAuthorSummary').value = book.authorSummary || '';
       document.getElementById('inpSynopsis').value = book.synopsis || '';
       document.getElementById('inpCoverUrl').value = book.coverUrl || '';
+      document.getElementById('inpYoutubeUrl').value = book.youtubeUrl || '';
       document.getElementById('inpPrintQuality').value = book.printQuality;
       document.getElementById('bookModal').classList.remove('hidden');
     }
@@ -422,7 +561,6 @@
       document.getElementById('inpDdcCategory').value = parts[1];
     }
 
-    // Simpan ke Google Sheets via REST API (POST)
     function handleFormSubmit(e) {
       e.preventDefault();
       const mode = document.getElementById('formMode').value;
@@ -437,6 +575,7 @@
         ddcCategory: document.getElementById('inpDdcCategory').value,
         publicationYear: parseInt(document.getElementById('inpYear').value) || 2024,
         coverUrl: document.getElementById('inpCoverUrl').value.trim(),
+        youtubeUrl: document.getElementById('inpYoutubeUrl').value.trim(),
         createdAt: new Date().toISOString()
       };
 
@@ -464,9 +603,8 @@
       });
     }
 
-    // Hapus Buku dari Google Sheets via REST API
     function deleteBook(id) {
-      if (!confirm('Yakin ingin menghapus buku ' + id + '?')) return;
+      if (!confirm('Yakin ingin menghapus kitab ' + id + '?')) return;
 
       fetch(APPS_SCRIPT_URL, {
         method: 'POST',
@@ -477,11 +615,10 @@
         loadBooksFromSheet();
       })
       .catch(err => {
-        alert('Gagal menghapus data: ' + err);
+        alert('Gagal menghapus: ' + err);
       });
     }
 
-    // Generate & Tampilkan QR Satuan
     function showQrForBook(id) {
       const book = allBooks.find(b => b.id === id);
       if (!book) return;
@@ -507,7 +644,7 @@
         text: payload,
         width: 140,
         height: 140,
-        colorDark: "#0f172a",
+        colorDark: "#064e3b",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.M
       });
@@ -519,7 +656,6 @@
       document.getElementById('singleQrModal').classList.add('hidden');
     }
 
-    // Cetak Lembar Massal (Batch Print)
     function openBatchPrintModal() {
       const grid = document.getElementById('batchGrid');
       grid.innerHTML = '';
@@ -527,14 +663,14 @@
       allBooks.forEach(b => {
         const callNum = getCallNumber(b);
         const item = document.createElement('div');
-        item.className = 'border-2 border-dashed border-slate-300 p-3 rounded-lg flex items-center gap-3 bg-white page-break';
+        item.className = 'border-2 border-dashed border-emerald-800 p-3 rounded-lg flex items-center gap-3 bg-white page-break';
         
         const qrId = 'batch_qr_' + b.id.replace(/[^a-zA-Z0-9]/g, '_');
         item.innerHTML = `
           <div id="${qrId}" class="w-20 h-20 shrink-0 border border-slate-200 p-1 flex items-center justify-center"></div>
           <div class="text-left space-y-1">
-            <span class="text-[8px] uppercase font-bold text-slate-400">PERPUSTAKAAN DDC</span>
-            <div class="bg-slate-100 px-1.5 py-0.5 rounded font-mono font-black text-xs text-slate-900">${callNum}</div>
+            <span class="text-[8px] uppercase font-bold text-emerald-800">MAKTABAH ARABIYYAH</span>
+            <div class="bg-emerald-50 px-1.5 py-0.5 rounded font-mono font-black text-xs text-slate-900">${callNum}</div>
             <p class="font-mono text-[10px] font-bold text-slate-600">${b.id}</p>
             <p class="font-bold text-slate-900 text-xs line-clamp-2">${b.title}</p>
           </div>
