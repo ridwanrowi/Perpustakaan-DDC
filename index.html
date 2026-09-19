@@ -36,7 +36,7 @@
             Perpustakaan DDC
           </h1>
           <p class="text-[11px] text-slate-500 hidden sm:block">
-            Google Sheets & Apps Script Web App
+            GitHub Pages & Google Sheets API Integration
           </p>
         </div>
       </div>
@@ -267,64 +267,41 @@
 
   <!-- SCRIPT LOGIC -->
   <script>
+    // PASTE URL WEB APP APPS SCRIPT ANDA DI SINI
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx.../exec";
+
     let allBooks = [];
 
     window.addEventListener('DOMContentLoaded', () => {
       loadBooksFromSheet();
     });
 
-    // Ambil data buku dari Google Sheets via google.script.run
+    // Ambil data buku dari Google Sheets via REST API
     function loadBooksFromSheet() {
       const statusBadge = document.getElementById('syncStatusBadge');
       statusBadge.innerText = 'Memuat dari Sheets...';
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(response) {
-            statusBadge.innerText = '● Google Sheets Terhubung';
-            if (response && response.status === 'success') {
-              allBooks = response.data || [];
-              renderCatalog(allBooks);
-            }
-          })
-          .withFailureHandler(function(err) {
-            statusBadge.innerText = '⚠️ Gagal Sinkron';
-            console.error('Apps Script Error:', err);
-          })
-          .apiGetBooks();
-      } else {
-        // Fallback data demo jika diuji di luar Apps Script
-        statusBadge.innerText = 'Mode Pratinjau Lokal';
-        allBooks = [
-          {
-            id: 'LIB-DDC-2024-001',
-            title: 'Struktur Data dan Algoritma Modern dengan Python',
-            author: 'Dr. Ir. Rian Suhendra',
-            authorSummary: 'Pakar algoritma & Dosen senior ITB.',
-            synopsis: 'Membahas graf, pohon seimbang, dan optimasi Big-O.',
-            printQuality: 'Hardcover - Bookpaper 72gsm (Kondisi Sangat Baik)',
-            ddcCode: '005.1',
-            ddcCategory: 'Pemrograman Komputer & Algoritma',
-            publicationYear: 2024,
-            coverUrl: 'https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&w=600&q=80',
-            createdAt: new Date().toISOString()
-          },
-          {
-            id: 'LIB-DDC-2023-002',
-            title: 'Psikologi Ketahanan Mental & Fokus di Era Distraksi',
-            author: 'Nadia Larasati, M.Psi.',
-            authorSummary: 'Praktisi psikologi klinis.',
-            synopsis: 'Panduan membangun fokus dan resiliensi emosi.',
-            printQuality: 'Softcover - Bookpaper 55gsm (Kondisi Baik)',
-            ddcCode: '158',
-            ddcCategory: 'Psikologi Terapan & Pengembangan Diri',
-            publicationYear: 2023,
-            coverUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
-            createdAt: new Date().toISOString()
-          }
-        ];
-        renderCatalog(allBooks);
+      if (APPS_SCRIPT_URL.includes("AKfycbx...")) {
+        statusBadge.innerText = '⚠️ Masukkan URL Apps Script!';
+        console.warn('URL Apps Script belum diganti di variabel APPS_SCRIPT_URL.');
+        return;
       }
+
+      fetch(`${APPS_SCRIPT_URL}?action=getBooks`)
+        .then(res => res.json())
+        .then(response => {
+          if (response && response.status === 'success') {
+            statusBadge.innerText = '● Google Sheets Terhubung';
+            allBooks = response.data || [];
+            renderCatalog(allBooks);
+          } else {
+            statusBadge.innerText = '⚠️ Respon Gagal';
+          }
+        })
+        .catch(err => {
+          statusBadge.innerText = '⚠️ Gagal Sinkron';
+          console.error('Fetch Error:', err);
+        });
     }
 
     // Nomor Panggil DDC Standar
@@ -392,12 +369,12 @@
       const cls = document.getElementById('mainClassFilter').value;
 
       const filtered = allBooks.filter(b => {
-        const matchesClass = cls === 'ALL' || b.ddcCode.startsWith(cls);
+        const matchesClass = cls === 'ALL' || String(b.ddcCode).startsWith(cls);
         const matchesQuery = !q ||
           b.title.toLowerCase().includes(q) ||
           b.author.toLowerCase().includes(q) ||
           b.id.toLowerCase().includes(q) ||
-          b.ddcCode.toLowerCase().includes(q);
+          String(b.ddcCode).toLowerCase().includes(q);
         return matchesClass && matchesQuery;
       });
 
@@ -445,7 +422,7 @@
       document.getElementById('inpDdcCategory').value = parts[1];
     }
 
-    // Simpan ke Google Sheets via apiAddBook / apiUpdateBook
+    // Simpan ke Google Sheets via REST API (POST)
     function handleFormSubmit(e) {
       e.preventDefault();
       const mode = document.getElementById('formMode').value;
@@ -467,45 +444,41 @@
       btn.innerText = 'Menyimpan...';
       btn.disabled = true;
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        const handler = mode === 'update' ? google.script.run.apiUpdateBook : google.script.run.apiAddBook;
-        handler
-          .withSuccessHandler(function(res) {
-            btn.innerText = 'Simpan ke Google Sheets';
-            btn.disabled = false;
-            closeBookModal();
-            loadBooksFromSheet();
-          })
-          .withFailureHandler(function(err) {
-            btn.innerText = 'Simpan ke Google Sheets';
-            btn.disabled = false;
-            alert('Gagal menyimpan: ' + err);
-          })(bookObj);
-      } else {
-        if (mode === 'update') {
-          allBooks = allBooks.map(b => b.id === bookObj.id ? bookObj : b);
-        } else {
-          allBooks.unshift(bookObj);
-        }
+      const actionType = mode === 'update' ? 'updateBook' : 'addBook';
+
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: actionType, data: bookObj })
+      })
+      .then(res => res.json())
+      .then(res => {
         btn.innerText = 'Simpan ke Google Sheets';
         btn.disabled = false;
         closeBookModal();
-        renderCatalog(allBooks);
-      }
+        loadBooksFromSheet();
+      })
+      .catch(err => {
+        btn.innerText = 'Simpan ke Google Sheets';
+        btn.disabled = false;
+        alert('Gagal menyimpan data: ' + err);
+      });
     }
 
-    // Hapus Buku dari Google Sheets
+    // Hapus Buku dari Google Sheets via REST API
     function deleteBook(id) {
       if (!confirm('Yakin ingin menghapus buku ' + id + '?')) return;
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function() { loadBooksFromSheet(); })
-          .apiDeleteBook(id);
-      } else {
-        allBooks = allBooks.filter(b => b.id !== id);
-        renderCatalog(allBooks);
-      }
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteBook', id: id })
+      })
+      .then(res => res.json())
+      .then(res => {
+        loadBooksFromSheet();
+      })
+      .catch(err => {
+        alert('Gagal menghapus data: ' + err);
+      });
     }
 
     // Generate & Tampilkan QR Satuan
